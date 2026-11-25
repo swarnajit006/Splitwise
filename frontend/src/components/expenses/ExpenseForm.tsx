@@ -63,11 +63,19 @@ export function ExpenseForm({ members, onClose, onSubmit, loading, expense }: Ex
       splitMethod === 'EQUAL'
         ? { participantIds: selectedMembers }
         : {
-          shares: selectedMembers.map((memberId) => ({
-            memberId,
-            ...(splitMethod === 'EXACT' ? { amount: Math.round(parseFloat(exactAmounts[memberId] || '0') * 100) } : {}),
-            ...(splitMethod === 'PERCENTAGE' ? { percentage: parseFloat(percentages[memberId] || '0') } : {}),
-          })),
+          shares: selectedMembers
+            .map((memberId) => ({
+              memberId,
+              ...(splitMethod === 'EXACT'
+                ? { amount: Math.round(parseFloat(exactAmounts[memberId] || '0') * 100) }
+                : {}),
+              ...(splitMethod === 'PERCENTAGE'
+                ? { percentage: parseFloat(percentages[memberId] || '0') }
+                : {}),
+            }))
+            .filter((s) =>
+              splitMethod === 'EXACT' ? (s.amount ?? 0) > 0 : (s.percentage ?? 0) > 0,
+            ),
         };
 
     onSubmit({
