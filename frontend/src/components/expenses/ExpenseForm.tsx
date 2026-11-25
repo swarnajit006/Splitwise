@@ -24,15 +24,15 @@ export function ExpenseForm({ members, onClose, onSubmit, loading, expense }: Ex
   const [category, setCategory] = useState<Category>(expense?.category || 'FOOD');
   const [categoryNote, setCategoryNote] = useState(expense?.categoryNote || '');
   const [selectedMembers, setSelectedMembers] = useState<string[]>(
-    expense ? expense.shares.map((s) => s.memberId) : members.map((m) => m.id),
+    expense?.shares ? expense.shares.map((s) => s.memberId) : members.map((m) => m.id),
   );
   const [exactAmounts, setExactAmounts] = useState<Record<string, string>>(
-    expense?.splitMethod === 'EXACT'
+    expense?.splitMethod === 'EXACT' && expense.shares
       ? Object.fromEntries(expense.shares.map((s) => [s.memberId, (s.amount / 100).toString()]))
       : {},
   );
   const [percentages, setPercentages] = useState<Record<string, string>>(
-    expense?.splitMethod === 'PERCENTAGE'
+    expense?.splitMethod === 'PERCENTAGE' && expense.shares
       ? Object.fromEntries(expense.shares.map((s) => [s.memberId, ((s.amount / expense.totalAmount) * 100).toString()]))
       : {},
   );
@@ -78,7 +78,7 @@ export function ExpenseForm({ members, onClose, onSubmit, loading, expense }: Ex
       ...(category === 'OTHER' ? { categoryNote: categoryNote.trim() } : {}),
       payerId,
       ...splitPayload,
-      ...(expense ? { version: expense.version } : {}),
+      ...(expense ? { version: expense.version ?? 1 } : {}),
     } as unknown as CreateExpenseRequest);
   };
 

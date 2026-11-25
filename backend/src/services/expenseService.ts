@@ -82,32 +82,37 @@ export async function createExpense(input: CreateExpenseInput) {
 }
 
 export async function listExpenses(groupId: string, pagination: PaginationParams, category?: Category) {
-  const paginationQuery = buildPaginationQuery(pagination);
-  const items = await prisma.expense.findMany({
-    where: {
-      groupId,
-      deletedAt: null,
-      ...(category && { category }),
-    },
-    ...paginationQuery,
-    include: {
-      payer: { select: { id: true, displayName: true } },
-      _count: { select: { shares: true } },
-    },
-  });
+    const paginationQuery = buildPaginationQuery(pagination);
+    const items = await prisma.expense.findMany({
+      where: {
+        groupId,
+        deletedAt: null,
+        ...(category && { category }),
+      },
+      ...paginationQuery,
+      include: {
+        payer: { select: { id: true, displayName: true } },
+        shares: { select: { memberId: true, amount: true } },
+        _count: { select: { shares: true } },
+      },
+    });
 
-  const mapped = items.map((e) => ({
-    id: e.id,
-    description: e.description,
-    totalAmount: e.totalAmount,
-    category: e.category,
-    splitMethod: e.splitMethod,
-    payer: e.payer,
-    participantCount: e._count.shares,
-    createdAt: e.createdAt,
-  }));
+    const mapped = items.map((e) => ({
+      id: e.id,
+      description: e.description,
+      totalAmount: e.totalAmount,
+      category: e.category,
+      categoryNote: e.categoryNote,
+      splitMethod: e.splitMethod,
+      payerId: e.payerId,
+      payer: e.payer,
+      shares: e.shares,
+      version: e.version,
+      participantCount: e._count.shares,
+      createdAt: e.createdAt,
+    }));
 
-  return paginateResults(mapped, pagination.limit);
+return paginateResults(mapped, pagination.limit);
 }
 
 export async function getExpenseById(expenseId: string, groupId: string) {
